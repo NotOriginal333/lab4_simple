@@ -73,7 +73,7 @@ class CottageSerializer(serializers.ModelSerializer):
         return cottage
 
 
-class AvailabilityCheckSerializer(serializers.Serializer):
+class CheckAvailabilitySerializer(serializers.Serializer):
     cottage = serializers.IntegerField()
     check_in = serializers.DateField()
     check_out = serializers.DateField()
@@ -88,3 +88,7 @@ class AvailabilityCheckSerializer(serializers.Serializer):
             })
 
         return data
+
+
+class CottageAvailabilitySerializer(serializers.Serializer):
+    cottage = serializers.IntegerField()

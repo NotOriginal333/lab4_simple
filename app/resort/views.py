@@ -1,6 +1,8 @@
 """
 Views for resort APIs.
 """
+from django.utils import timezone
+
 from drf_spectacular.utils import (
     extend_schema_view,
     extend_schema,
@@ -143,7 +145,7 @@ class BookingViewSet(mixins.UpdateModelMixin,
 
 
 class CheckAvailabilityView(generics.GenericAPIView):
-    serializer_class = serializers.AvailabilityCheckSerializer
+    serializer_class = serializers.CheckAvailabilitySerializer
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -170,3 +172,47 @@ class CheckAvailabilityView(generics.GenericAPIView):
                 'available': True,
                 'message': 'The cottage is available for the selected dates.'
             }, status=status.HTTP_200_OK)
+
+
+class CottageAvailabilityView(generics.GenericAPIView):
+    serializer_class = serializers.CottageAvailabilitySerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        cottage_id = serializer.validated_data['cottage']
+
+        try:
+            cottage = Cottage.objects.get(id=cottage_id)
+        except Cottage.DoesNotExist:
+            return Response({
+                'message': 'Cottage not found.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        bookings = Booking.objects.filter(cottage=cottage).order_by('check_in')
+
+        available_dates = []
+
+        current_date = timezone.now().date()
+        end_of_year = current_date.replace(month=12, day=31)
+
+        last_end_date = current_date
+
+        for booking in bookings:
+            if last_end_date < booking.check_in:
+                available_dates.append({
+                    'from': last_end_date,
+                    'to': booking.check_in
+                })
+
+            last_end_date = max(last_end_date, booking.check_out)
+
+        if last_end_date <= end_of_year:
+            available_dates.append({
+                'from': last_end_date,
+                'to': end_of_year
+            })
+
+        return Response({
+            'available_dates': available_dates
+        }, status=status.HTTP_200_OK)

@@ -5,6 +5,8 @@ from django.contrib.auth.models import (
     PermissionsMixin
 )
 from django.conf import settings
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
 from rest_framework.exceptions import ValidationError
 
 
@@ -80,6 +82,13 @@ class Cottage(models.Model):
 
     def __str__(self):
         return f'{self.name}, {self.category}, max. guests - {self.total_capacity}, price - {self.price_per_night}'
+
+
+@receiver(m2m_changed, sender=Cottage.amenities.through)
+def update_total_capacity(sender, instance, **kwargs):
+    """Update total capacity when amenities are added or removed."""
+    instance.calculate_total_capacity()
+    instance.save()
 
 
 class Booking(models.Model):

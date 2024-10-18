@@ -88,6 +88,28 @@ class ModelTests(TestCase):
         self.assertEqual('Sample amenity name', amenity.name)
         self.assertEqual(5, amenity.additional_capacity)
 
+    def test_create_cottage_with_additional_capacity(self):
+        """Test calculating a cottage total capacity is right."""
+        user = create_user()
+        amenity = models.Amenities.objects.create(
+            name='Sample amenity name',
+            additional_capacity=1,
+            user=user
+        )
+        cottage = models.Cottage.objects.create(
+            name='Sample cottage name',
+            base_capacity=5,
+            price_per_night=Decimal('500.50'),
+            user=user
+        )
+
+        cottage.amenities.add(amenity)
+        cottage.refresh_from_db()
+
+        self.assertEqual('Sample cottage name', cottage.name)
+        self.assertEqual(5, cottage.base_capacity)
+        self.assertEqual(6, cottage.total_capacity)
+
     def test_create_booking(self):
         """Test creating a booking is successful."""
         user = create_user()
