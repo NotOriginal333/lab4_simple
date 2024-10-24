@@ -42,7 +42,11 @@ class UserAdmin(BaseUserAdmin):
     )
 
 
+class CottageAdmin(admin.ModelAdmin):
+    list_filter = ['category', 'amenities', 'price_per_night', 'total_capacity']
+
+
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Amenities)
-admin.site.register(models.Cottage)
+admin.site.register(models.Cottage, CottageAdmin)
 admin.site.register(models.Booking)

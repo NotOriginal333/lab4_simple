@@ -2,6 +2,7 @@
 Tests for the booking API.
 """
 from datetime import datetime
+from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.urls import reverse
@@ -221,6 +222,21 @@ class PrivateBookingApiTests(TestCase):
         res = self.client.post(BOOKING_URL, payload, format='json')
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_calculating_booking_price(self):
+        """Test calculating booking price function."""
+        payload = {
+            'cottage': self.cottage.id,
+            'check_in': '2024-10-01',
+            'check_out': '2024-10-05',
+            'customer_name': 'John Doe',
+            'customer_email': 'john.doe@example.com',
+            'user': self.user.id
+        }
+        res = self.client.post(BOOKING_URL, payload, format='json')
+        booking = Booking.objects.get(id=res.data['id'])
+
+        self.assertEqual(Decimal('400.0'), booking.price)
 
 
 class CheckAvailabilityApiTests(TestCase):

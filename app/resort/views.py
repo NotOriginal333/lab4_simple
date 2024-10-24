@@ -1,6 +1,9 @@
 """
 Views for resort APIs.
 """
+from decimal import Decimal
+
+from django.db.models import Sum
 from django.utils import timezone
 
 from drf_spectacular.utils import (
@@ -15,6 +18,7 @@ from rest_framework import (
     status, generics,
 )
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
@@ -25,6 +29,7 @@ from core.models import (
     Booking,
 )
 from resort import serializers
+from rest_framework.views import APIView
 
 
 @extend_schema_view(
@@ -145,6 +150,7 @@ class BookingViewSet(mixins.UpdateModelMixin,
 
 
 class CheckAvailabilityView(generics.GenericAPIView):
+    """View for checking availability of cottage in dates chosen by user."""
     serializer_class = serializers.CheckAvailabilitySerializer
 
     def post(self, request, *args, **kwargs):
@@ -175,6 +181,7 @@ class CheckAvailabilityView(generics.GenericAPIView):
 
 
 class CottageAvailabilityView(generics.GenericAPIView):
+    """View for getting the cottage available dates to years end."""
     serializer_class = serializers.CottageAvailabilitySerializer
 
     def post(self, request, *args, **kwargs):
@@ -216,3 +223,26 @@ class CottageAvailabilityView(generics.GenericAPIView):
         return Response({
             'available_dates': available_dates
         }, status=status.HTTP_200_OK)
+
+
+class FinancialReportView(APIView):
+    """View to calculate and return total income and expenses for cottages."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if not request.user.is_authenticated:
+            raise PermissionDenied('Authentication required to view financial summary.')
+
+        total_income = Booking.objects.filter(cottage__user=request.user).aggregate(total=Sum('price'))[
+                           'total'] or Decimal('0')
+
+        total_expenses = Cottage.objects.filter(user=request.user).aggregate(total=Sum('expenses'))['total'] or Decimal(
+            '0')
+
+        net_profit = total_income - total_expenses
+
+        return Response({
+            'total_income': total_income,
+            'total_expenses': total_expenses,
+            'net_profit': net_profit
+        })

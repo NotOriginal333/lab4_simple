@@ -20,4 +20,5 @@ urlpatterns = [
     path('', include(router.urls)),
     path('check-availability/', views.CheckAvailabilityView.as_view(), name='check-availability'),
     path('cottage-availability/', views.CottageAvailabilityView.as_view(), name='cottage-availability'),
+    path('financial-report/', views.FinancialReportView.as_view(), name='financial-report'),
 ]

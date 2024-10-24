@@ -30,7 +30,7 @@ def create_user(email='user@example.com', password='testpass123'):
 
 
 def create_admin(email='admin@example.com', password='testpass123', is_staff=True):
-    """Create and return a user."""
+    """Create and return an admin."""
     return get_user_model().objects.create_user(
         email=email,
         password=password,

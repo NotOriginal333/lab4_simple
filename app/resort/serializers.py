@@ -11,7 +11,7 @@ class AmenitiesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Amenities
-        fields = '__all__'
+        fields = ['id', 'name']
         read_only_fields = ['id']
 
     def validate(self, data):
@@ -67,10 +67,21 @@ class CottageSerializer(serializers.ModelSerializer):
         amenities = validated_data.pop('amenities', [])
         cottage = Cottage.objects.create(**validated_data)
         self._get_or_create_amenities(amenities, cottage)
-        cottage.total_capacity = cottage.calculate_total_capacity()
         cottage.save()
 
         return cottage
+
+    def update(self, instance, validated_data):
+        """Update a cottage."""
+        amenities = validated_data.pop('amenities', None)
+        if amenities is not None:
+            instance.amenities.clear()
+            self._get_or_create_amenities(amenities, instance)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance
 
 
 class CheckAvailabilitySerializer(serializers.Serializer):
