@@ -14,6 +14,7 @@ COTTAGE_URL = reverse('resort:cottage-list')
 REPORT_URL = reverse('resort:financial-report')
 BOOKING_URL = reverse('resort:booking-list')
 
+
 def detail_url(cottage_id):
     """Create and return a cottage detail URL."""
     return reverse('resort:cottage-detail', args=[cottage_id])
@@ -266,6 +267,7 @@ class PrivateCottageApiTest(TestCase):
         self.assertEqual(res.data[0]['name'], cottage.name)
         self.assertEqual(res.data[0]['id'], cottage.id)
 
+
 class AdditionalFunctionalityTests(TestCase):
     """Tests for additional functions."""
 
@@ -300,6 +302,3 @@ class AdditionalFunctionalityTests(TestCase):
         self.assertEqual(res.data['total_expenses'], Decimal('200'))
         self.assertEqual(res.data['total_income'], Decimal('400'))
         self.assertEqual(res.data['net_profit'], Decimal('200'))
-
-
-

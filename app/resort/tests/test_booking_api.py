@@ -223,8 +223,8 @@ class PrivateBookingApiTests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_calculating_booking_price(self):
-        """Test calculating booking price function."""
+    def test_calculating_booking_price_without_discount(self):
+        """Test calculating booking price function without discount."""
         payload = {
             'cottage': self.cottage.id,
             'check_in': '2024-10-01',
@@ -237,6 +237,21 @@ class PrivateBookingApiTests(TestCase):
         booking = Booking.objects.get(id=res.data['id'])
 
         self.assertEqual(Decimal('400.0'), booking.price)
+
+    def test_calculating_booking_price_with_discount(self):
+        """Test calculating booking price function with discount."""
+        payload = {
+            'cottage': self.cottage.id,
+            'check_in': '2024-11-01',
+            'check_out': '2024-11-05',
+            'customer_name': 'John Doe',
+            'customer_email': 'john.doe@example.com',
+            'user': self.user.id
+        }
+        res = self.client.post(BOOKING_URL, payload, format='json')
+        booking = Booking.objects.get(id=res.data['id'])
+
+        self.assertEqual(Decimal('320.0'), booking.price)
 
 
 class CheckAvailabilityApiTests(TestCase):

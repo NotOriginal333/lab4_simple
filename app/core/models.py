@@ -90,7 +90,6 @@ class Cottage(models.Model):
         additional_expenses = sum(amenity.price for amenity in self.amenities.all())
         self.expenses = self.expenses + additional_expenses
 
-
     def __str__(self):
         return f'{self.name}, {self.category}, max. guests - {self.total_capacity}, price - {self.price_per_night}'
 
@@ -127,7 +126,13 @@ class Booking(models.Model):
         if nights <= 0:
             raise ValidationError("Invalid dates: Check-out must be after check-in.")
 
-        return Decimal(self.cottage.price_per_night) * Decimal(nights)
+        price = Decimal(self.cottage.price_per_night) * Decimal(nights)
+
+        if self.check_in.month in [11, 3] or self.check_out.month in [11, 3]:
+            discount = price * Decimal('0.20')
+            price -= discount
+
+        return price
 
     def clean(self):
         overlapping_bookings = Booking.objects.filter(
