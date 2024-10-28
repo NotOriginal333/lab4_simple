@@ -291,14 +291,20 @@ class AdditionalFunctionalityTests(TestCase):
         }
         self.client.post(BOOKING_URL, payload, format='json')
 
-        cottage1.expenses = Decimal('100')
-        cottage2.expenses = Decimal('100')
+        amenity1 = Amenities.objects.create(user=self.user, name='Sauna', expenses=Decimal('50'))
+        amenity2 = Amenities.objects.create(user=self.user, name='Wi-Fi', expenses=Decimal('10'))
+
+        cottage1.base_expenses = Decimal('100')
+        cottage2.base_expenses = Decimal('100')
         cottage1.save()
         cottage2.save()
+        cottage1.amenities.add(amenity1)
+        cottage1.amenities.add(amenity2)
+        cottage2.amenities.add(amenity2)
 
         res = self.client.get(REPORT_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data['total_expenses'], Decimal('200'))
+        self.assertEqual(res.data['total_expenses'], Decimal('270'))
         self.assertEqual(res.data['total_income'], Decimal('400'))
-        self.assertEqual(res.data['net_profit'], Decimal('200'))
+        self.assertEqual(res.data['net_profit'], Decimal('130'))

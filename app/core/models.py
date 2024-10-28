@@ -53,6 +53,7 @@ class Amenities(models.Model):
     name = models.CharField(max_length=100)
     additional_capacity = models.IntegerField(default=0)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
@@ -77,6 +78,7 @@ class Cottage(models.Model):
     amenities = models.ManyToManyField(Amenities)
     price_per_night = models.DecimalField(max_digits=10, decimal_places=2)
     total_capacity = models.IntegerField(editable=False, default=0)
+    base_expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     expenses = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -87,15 +89,15 @@ class Cottage(models.Model):
         """Calculate the total capacity and expenses of the cottage including amenities."""
         additional_capacity = sum(amenity.additional_capacity for amenity in self.amenities.all())
         self.total_capacity = self.base_capacity + additional_capacity
-        additional_expenses = sum(amenity.price for amenity in self.amenities.all())
-        self.expenses = self.expenses + additional_expenses
+
+        self.expenses = self.base_expenses + sum(amenity.expenses for amenity in self.amenities.all())
 
     def __str__(self):
         return f'{self.name}, {self.category}, max. guests - {self.total_capacity}, price - {self.price_per_night}'
 
 
 @receiver(m2m_changed, sender=Cottage.amenities.through)
-def update_total_capacity(sender, instance, **kwargs):
+def update_total_capacity_and_expenses(sender, instance, **kwargs):
     """Update total capacity and expenses when amenities are added or removed."""
     instance.calculate_total_capacity_and_expenses()
     instance.save()
@@ -126,7 +128,9 @@ class Booking(models.Model):
         if nights <= 0:
             raise ValidationError("Invalid dates: Check-out must be after check-in.")
 
-        price = Decimal(self.cottage.price_per_night) * Decimal(nights)
+        amenities_total_price = sum(amenity.price for amenity in self.cottage.amenities.all())
+
+        price = (Decimal(self.cottage.price_per_night) + Decimal(amenities_total_price)) * Decimal(nights)
 
         if self.check_in.month in [11, 3] or self.check_out.month in [11, 3]:
             discount = price * Decimal('0.20')

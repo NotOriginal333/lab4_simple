@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
-from core.models import Booking, Cottage
+from core.models import Booking, Cottage, Amenities
 from resort.serializers import BookingSerializer
 
 BOOKING_URL = reverse('resort:booking-list')
@@ -225,6 +225,8 @@ class PrivateBookingApiTests(TestCase):
 
     def test_calculating_booking_price_without_discount(self):
         """Test calculating booking price function without discount."""
+        amenity = Amenities.objects.create(user=self.user, name="Wi-Fi", price=Decimal('10.00'))
+        self.cottage.amenities.add(amenity)
         payload = {
             'cottage': self.cottage.id,
             'check_in': '2024-10-01',
@@ -236,10 +238,12 @@ class PrivateBookingApiTests(TestCase):
         res = self.client.post(BOOKING_URL, payload, format='json')
         booking = Booking.objects.get(id=res.data['id'])
 
-        self.assertEqual(Decimal('400.0'), booking.price)
+        self.assertEqual(Decimal('440.0'), booking.price)
 
     def test_calculating_booking_price_with_discount(self):
         """Test calculating booking price function with discount."""
+        amenity = Amenities.objects.create(user=self.user, name="Wi-Fi", price=Decimal('10.00'))
+        self.cottage.amenities.add(amenity)
         payload = {
             'cottage': self.cottage.id,
             'check_in': '2024-11-01',
@@ -251,7 +255,7 @@ class PrivateBookingApiTests(TestCase):
         res = self.client.post(BOOKING_URL, payload, format='json')
         booking = Booking.objects.get(id=res.data['id'])
 
-        self.assertEqual(Decimal('320.0'), booking.price)
+        self.assertEqual(Decimal('352.0'), booking.price)
 
 
 class CheckAvailabilityApiTests(TestCase):
