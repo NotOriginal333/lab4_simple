@@ -236,9 +236,8 @@ class FinancialReportView(APIView):
         total_income = Booking.objects.filter(cottage__user=request.user).aggregate(total=Sum('price'))[
                            'total'] or Decimal('0')
 
-        total_expenses = Cottage.objects.filter(user=request.user).aggregate(total=Sum('expenses'))['total'] or Decimal(
-            '0')
-
+        total_expenses = Decimal(
+            Cottage.objects.filter(user=request.user).aggregate(total=Sum('expenses'))['total'] or '0')
         net_profit = total_income - total_expenses
 
         return Response({

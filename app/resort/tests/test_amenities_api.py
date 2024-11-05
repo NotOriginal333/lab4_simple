@@ -122,7 +122,7 @@ class PrivateAmenitiesApiTest(TestCase):
         amenity2 = Amenities.objects.create(user=self.user, name='Pretty')
         cottage1 = Cottage.objects.create(
             name='Big House',
-            base_capacity=5,
+            total_capacity=5,
             price_per_night=Decimal('5.50'),
             user=self.user
         )
@@ -142,13 +142,13 @@ class PrivateAmenitiesApiTest(TestCase):
         Amenities.objects.create(user=self.user, name='Wi-Fi')
         cottage1 = Cottage.objects.create(
             name='Big House',
-            base_capacity=5,
+            total_capacity=5,
             price_per_night=Decimal('5.50'),
             user=self.user
         )
         cottage2 = Cottage.objects.create(
             name='Nice House',
-            base_capacity=3,
+            total_capacity=3,
             price_per_night=Decimal('50.50'),
             user=self.user
         )

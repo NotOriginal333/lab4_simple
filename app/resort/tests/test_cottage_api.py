@@ -42,7 +42,7 @@ def create_cottage(user, **params):
     defaults = {
         'name': 'Test Cottage',
         'category': 'standard',
-        'base_capacity': 5,
+        'total_capacity': 5,
         'price_per_night': Decimal('100')
     }
     defaults.update(params)
@@ -99,7 +99,7 @@ class AdminCottageApiTest(TestCase):
         """Test creating a cottage with new amenities."""
         payload = {
             'name': 'Test Cottage',
-            'base_capacity': 5,
+            'total_capacity': 5,
             'category': 'standard',
             'user': self.user.id,
             'price_per_night': Decimal('100.0'),
@@ -134,7 +134,7 @@ class AdminCottageApiTest(TestCase):
         self.assertEqual("Sofa", amenity_sofa.name)
         payload = {
             'name': 'Test Cottage',
-            'base_capacity': 5,
+            'total_capacity': 5,
             'user': self.user.id,
             'price_per_night': Decimal('100'),
             'amenities': [{'name': 'Wi-Fi', },
@@ -278,8 +278,8 @@ class AdditionalFunctionalityTests(TestCase):
 
     def test_retrieve_financial_report(self):
         """Test retrieving a financial report."""
-        cottage1 = create_cottage(user=self.user)
-        cottage2 = create_cottage(user=self.user)
+        cottage1 = create_cottage(user=self.user, base_expenses=Decimal('150'))
+        cottage2 = create_cottage(user=self.user, base_expenses=Decimal('100'))
 
         payload = {
             'cottage': cottage1.id,
@@ -294,10 +294,6 @@ class AdditionalFunctionalityTests(TestCase):
         amenity1 = Amenities.objects.create(user=self.user, name='Sauna', expenses=Decimal('50'))
         amenity2 = Amenities.objects.create(user=self.user, name='Wi-Fi', expenses=Decimal('10'))
 
-        cottage1.base_expenses = Decimal('100')
-        cottage2.base_expenses = Decimal('100')
-        cottage1.save()
-        cottage2.save()
         cottage1.amenities.add(amenity1)
         cottage1.amenities.add(amenity2)
         cottage2.amenities.add(amenity2)
@@ -305,6 +301,6 @@ class AdditionalFunctionalityTests(TestCase):
         res = self.client.get(REPORT_URL)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertEqual(res.data['total_expenses'], Decimal('270'))
+        self.assertEqual(res.data['total_expenses'], Decimal('320'))
         self.assertEqual(res.data['total_income'], Decimal('400'))
-        self.assertEqual(res.data['net_profit'], Decimal('130'))
+        self.assertEqual(res.data['net_profit'], Decimal('80'))

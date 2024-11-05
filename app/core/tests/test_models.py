@@ -67,13 +67,13 @@ class ModelTests(TestCase):
         user = create_user()
         cottage = models.Cottage.objects.create(
             name='Sample cottage name',
-            base_capacity=5,
+            total_capacity=5,
             price_per_night=Decimal('500.50'),
             user=user
         )
 
         self.assertEqual('Sample cottage name', cottage.name)
-        self.assertEqual(5, cottage.base_capacity)
+        self.assertEqual(5, cottage.total_capacity)
         self.assertEqual(Decimal(500.50), cottage.price_per_night)
 
     def test_create_amenity(self):
@@ -98,7 +98,7 @@ class ModelTests(TestCase):
         )
         cottage = models.Cottage.objects.create(
             name='Sample cottage name',
-            base_capacity=5,
+            total_capacity=5,
             price_per_night=Decimal('500.50'),
             user=user
         )
@@ -107,7 +107,6 @@ class ModelTests(TestCase):
         cottage.refresh_from_db()
 
         self.assertEqual('Sample cottage name', cottage.name)
-        self.assertEqual(5, cottage.base_capacity)
         self.assertEqual(6, cottage.total_capacity)
 
     def test_create_booking(self):
@@ -115,7 +114,7 @@ class ModelTests(TestCase):
         user = create_user()
         cottage = models.Cottage.objects.create(
             name='Sample cottage name',
-            base_capacity=5,
+            total_capacity=5,
             price_per_night=Decimal('500.50'),
             user=user
         )

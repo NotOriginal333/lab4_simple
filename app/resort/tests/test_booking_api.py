@@ -38,7 +38,7 @@ class BookingSerializerTests(TestCase):
         self.cottage = create_cottage(
             self.user,
             name='Test Cottage',
-            base_capacity=4,
+            total_capacity=4,
             price_per_night='100.00'
         )
 
@@ -106,7 +106,7 @@ class PrivateBookingApiTests(TestCase):
         self.cottage = create_cottage(
             self.user,
             name='Test Cottage',
-            base_capacity=4,
+            total_capacity=4,
             price_per_night='100.00'
         )
 
@@ -198,7 +198,7 @@ class PrivateBookingApiTests(TestCase):
         another_cottage = create_cottage(
             self.user,
             name='Another Cottage',
-            base_capacity=4,
+            total_capacity=4,
             price_per_night='150.00'
         )
 
@@ -265,7 +265,7 @@ class CheckAvailabilityApiTests(TestCase):
         self.client = APIClient()
         self.user = create_user()
         self.client.force_authenticate(self.user)
-        self.cottage = create_cottage(self.user, name='Test Cottage', base_capacity=4, price_per_night='100.00')
+        self.cottage = create_cottage(self.user, name='Test Cottage', total_capacity=4, price_per_night='100.00')
 
     def test_check_availability_valid_dates(self):
         """Test checking availability for valid dates."""
